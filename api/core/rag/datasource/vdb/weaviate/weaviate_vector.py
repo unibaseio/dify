@@ -2,6 +2,8 @@ import datetime
 import json
 from typing import Any, Optional
 
+import os
+
 import requests
 import weaviate
 from pydantic import BaseModel, model_validator
@@ -101,6 +103,9 @@ class WeaviateVector(BaseVector):
         texts = [d.page_content for d in documents]
         metadatas = [d.metadata for d in documents]
 
+        print(os.environ["UNIBASE_ACCOUNT"])
+        print(f"=== document: {documents[0]}")
+        
         ids = []
 
         with self._client.batch as batch:
@@ -115,6 +120,7 @@ class WeaviateVector(BaseVector):
                     class_name=self._collection_name,
                     uuid=uuids[i],
                     vector=embeddings[i] if embeddings else None,
+                    tenant=os.environ["UNIBASE_ACCOUNT"],
                 )
                 ids.append(uuids[i])
         return ids
@@ -125,7 +131,7 @@ class WeaviateVector(BaseVector):
         if self._client.schema.contains(schema):
             where_filter = {"operator": "Equal", "path": [key], "valueText": value}
 
-            self._client.batch.delete_objects(class_name=self._collection_name, where=where_filter, output="minimal")
+            self._client.batch.delete_objects(class_name=self._collection_name, where=where_filter, output="minimal",tenant=os.environ["UNIBASE_ACCOUNT"])
 
     def delete(self):
         # check whether the index already exists
@@ -172,6 +178,7 @@ class WeaviateVector(BaseVector):
                     self._client.data_object.delete(
                         class_name=self._collection_name,
                         uuid=uuid,
+                        tenant=os.environ["UNIBASE_ACCOUNT"],
                     )
                 except weaviate.UnexpectedStatusCodeException as e:
                     # tolerate not found error

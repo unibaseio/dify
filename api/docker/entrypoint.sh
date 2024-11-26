@@ -2,6 +2,9 @@
 
 set -e
 
+# cp /opt/poetry.lock /app/api/storage
+# cp /opt/pyproject.toml /app/api/storage
+
 if [[ "${MIGRATION_ENABLED}" == "true" ]]; then
   echo "Running migrations"
   flask upgrade-db

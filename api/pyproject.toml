@@ -181,7 +181,7 @@ tiktoken = "~0.8.0"
 tokenizers = "~0.15.0"
 transformers = "~4.35.0"
 unstructured = { version = "~0.16.1", extras = ["docx", "epub", "md", "msg", "ppt", "pptx"] }
-validators = "0.21.0"
+validators = "0.21.2"
 volcengine-python-sdk = {extras = ["ark"], version = "~1.0.98"}
 websocket-client = "~1.7.0"
 werkzeug = "~3.0.1"
@@ -258,7 +258,7 @@ tcvectordb = "1.3.2"
 tidb-vector = "0.0.9"
 upstash-vector = "0.6.0"
 volcengine-compat = "~1.0.156"
-weaviate-client = "~3.21.0"
+weaviate-client = "3.26.5"
 
 ############################################################
 # [ Dev ] dependency group

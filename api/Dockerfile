@@ -21,13 +21,15 @@ ENV POETRY_REQUESTS_TIMEOUT=15
 FROM base AS packages
 
 # if you located in China, you can use aliyun mirror to speed up
-# RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
+#RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev
 
 # Install Python dependencies
 COPY pyproject.toml poetry.lock ./
+#RUN poetry source add --priority=primary tsinghua https://pypi.tuna.tsinghua.edu.cn/simple/
+#RUN poetry lock
 RUN poetry install --sync --no-cache --no-root
 
 # production stage
@@ -47,6 +49,8 @@ EXPOSE 5001
 ENV TZ=UTC
 
 WORKDIR /app/api
+
+#RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl nodejs libgmp-dev libmpfr-dev libmpc-dev \
@@ -76,6 +80,8 @@ COPY . /app/api/
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# COPY --from=packages /app/api/poetry.lock /opt/poetry.lock
+# COPY --from=packages /app/api/pyproject.toml /opt/pyproject.toml
 
 ARG COMMIT_SHA
 ENV COMMIT_SHA=${COMMIT_SHA}

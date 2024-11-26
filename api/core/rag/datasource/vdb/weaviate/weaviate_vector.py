@@ -148,6 +148,7 @@ class WeaviateVector(BaseVector):
             return False
         result = (
             self._client.query.get(collection_name)
+            .with_tenant(os.environ["UNIBASE_ACCOUNT"])
             .with_additional(["id"])
             .with_where(
                 {
@@ -190,7 +191,7 @@ class WeaviateVector(BaseVector):
         collection_name = self._collection_name
         properties = self._attributes
         properties.append(Field.TEXT_KEY.value)
-        query_obj = self._client.query.get(collection_name, properties)
+        query_obj = self._client.query.get(collection_name, properties).with_tenant(os.environ["UNIBASE_ACCOUNT"])
 
         vector = {"vector": query_vector}
         if kwargs.get("where_filter"):
@@ -237,7 +238,7 @@ class WeaviateVector(BaseVector):
         properties.append(Field.TEXT_KEY.value)
         if kwargs.get("search_distance"):
             content["certainty"] = kwargs.get("search_distance")
-        query_obj = self._client.query.get(collection_name, properties)
+        query_obj = self._client.query.get(collection_name, properties).with_tenant(os.environ["UNIBASE_ACCOUNT"])
         if kwargs.get("where_filter"):
             query_obj = query_obj.with_where(kwargs.get("where_filter"))
         query_obj = query_obj.with_additional(["vector"])

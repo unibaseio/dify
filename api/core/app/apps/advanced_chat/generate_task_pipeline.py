@@ -64,6 +64,8 @@ from models.workflow import (
     WorkflowRunStatus,
 )
 
+from extensions.ext_hub import hub_client
+
 logger = logging.getLogger(__name__)
 
 
@@ -539,6 +541,9 @@ class AdvancedChatAppGenerateTaskPipeline(BasedGenerateTaskPipeline, WorkflowCyc
             self._task_state.metadata["usage"] = jsonable_encoder(LLMUsage.empty_usage())
 
         db.session.commit()
+
+        logger.warning(f"=== _save_message: {self._message.to_dict()}")
+        hub_client.upload_hub(self._message.from_account_id, self._message.id, json.dumps(self._message.to_dict()))
 
         message_was_created.send(
             self._message,

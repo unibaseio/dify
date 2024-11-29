@@ -18,6 +18,9 @@ from core.rag.models.document import Document
 from extensions.ext_redis import redis_client
 from models.dataset import Dataset
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class WeaviateConfig(BaseModel):
     endpoint: str
@@ -103,8 +106,7 @@ class WeaviateVector(BaseVector):
         texts = [d.page_content for d in documents]
         metadatas = [d.metadata for d in documents]
 
-        print(os.environ["UNIBASE_ACCOUNT"])
-        print(f"=== document: {documents[0]}")
+        logger.warning(f"=== document: {os.environ["UNIBASE_ACCOUNT"]} {documents[0]}")
         
         ids = []
 

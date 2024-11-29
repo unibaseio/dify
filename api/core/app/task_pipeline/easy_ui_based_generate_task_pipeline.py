@@ -57,6 +57,8 @@ from extensions.ext_database import db
 from models.account import Account
 from models.model import AppMode, Conversation, EndUser, Message, MessageAgentThought
 
+from extensions.ext_hub import hub_client
+
 logger = logging.getLogger(__name__)
 
 
@@ -361,6 +363,9 @@ class EasyUIBasedGenerateTaskPipeline(BasedGenerateTaskPipeline, MessageCycleMan
         )
 
         db.session.commit()
+
+        logger.warning(f"=== _save_message: {self._message.to_dict()}")
+        hub_client.upload_hub(self._message.from_account_id, self._message.id, json.dumps(self._message.to_dict()))
 
         if trace_manager:
             trace_manager.add_trace_task(

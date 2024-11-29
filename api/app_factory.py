@@ -34,6 +34,7 @@ from extensions import (
     ext_redis,
     ext_sentry,
     ext_storage,
+    ext_hub,
 )
 from extensions.ext_database import db
 from extensions.ext_login import login_manager
@@ -94,6 +95,7 @@ def initialize_extensions(app):
     ext_hosting_provider.init_app(app)
     ext_sentry.init_app(app)
     ext_proxy_fix.init_app(app)
+    ext_hub.init_app(app)
 
 
 # Flask-Login configuration

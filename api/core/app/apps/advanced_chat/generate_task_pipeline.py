@@ -64,6 +64,7 @@ from models.workflow import (
     WorkflowRunStatus,
 )
 
+from core.prompt.utils.prompt_message_util import PromptMessageUtil
 from extensions.ext_hub import hub_client
 
 logger = logging.getLogger(__name__)
@@ -542,8 +543,19 @@ class AdvancedChatAppGenerateTaskPipeline(BasedGenerateTaskPipeline, WorkflowCyc
 
         db.session.commit()
 
-        logger.warning(f"=== _save_message: {self._message.to_dict()}")
-        hub_client.upload_hub(self._message.from_account_id, self._message.id, json.dumps(self._message.to_dict()))
+        msgdict = self._message.to_dict()
+        logger.warning(f"=== _save_message b: {msgdict}")
+        msgdict["message"] = PromptMessageUtil.prompt_messages_to_prompt_for_saving_all(
+            self._model_config.mode, self._task_state.llm_result.prompt_messages
+        )
+
+        try:
+            msgdict = json.dumps(msgdict, ensure_ascii=False)
+        except Exception as e:
+            msgdict = json.dumps(msgdict)
+
+        hub_client.upload_hub(self._message.from_account_id, self._message.id, msgdict)
+        logger.warning(f"=== _save_message b done")
 
         message_was_created.send(
             self._message,

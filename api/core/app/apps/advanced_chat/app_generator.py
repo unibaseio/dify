@@ -224,7 +224,7 @@ class AdvancedChatAppGenerator(MessageBasedAppGenerator):
 
         # init generate records
         (conversation, message) = self._init_generate_records(application_generate_entity, conversation)
-
+        logger.warning(f"=== message: {message.id}")
         if is_first_conversation:
             # update conversation features
             conversation.override_model_configs = workflow.features

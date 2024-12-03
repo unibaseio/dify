@@ -127,7 +127,7 @@ class CompletionAppGenerator(MessageBasedAppGenerator):
 
         # init generate records
         (conversation, message) = self._init_generate_records(application_generate_entity)
-
+        logger.warning(f"=== message: {message.id}")
         # init queue manager
         queue_manager = MessageBasedAppQueueManager(
             task_id=application_generate_entity.task_id,
@@ -287,7 +287,7 @@ class CompletionAppGenerator(MessageBasedAppGenerator):
 
         # init generate records
         (conversation, message) = self._init_generate_records(application_generate_entity)
-
+        logger.warning(f"=== message: {message.id}")
         # init queue manager
         queue_manager = MessageBasedAppQueueManager(
             task_id=application_generate_entity.task_id,

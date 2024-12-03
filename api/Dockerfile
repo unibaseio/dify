@@ -28,8 +28,8 @@ RUN apt-get update \
 
 # Install Python dependencies
 COPY pyproject.toml poetry.lock ./
-#RUN poetry source add --priority=primary tsinghua https://pypi.tuna.tsinghua.edu.cn/simple/
-#RUN poetry lock
+# RUN poetry source add --priority=primary tsinghua https://pypi.tuna.tsinghua.edu.cn/simple/
+# RUN poetry lock
 RUN poetry install --sync --no-cache --no-root
 
 # production stage

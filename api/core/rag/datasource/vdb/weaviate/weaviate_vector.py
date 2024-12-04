@@ -36,10 +36,12 @@ class WeaviateConfig(BaseModel):
 
 
 class WeaviateVector(BaseVector):
-    def __init__(self, collection_name: str, config: WeaviateConfig, attributes: list):
+    def __init__(self, collection_name: str, account_id: str, tenant_id: str, config: WeaviateConfig, attributes: list):
         super().__init__(collection_name)
         self._client = self._init_client(config)
         self._attributes = attributes
+        self._account_id = account_id
+        self._tenant_id = tenant_id
 
     def _init_client(self, config: WeaviateConfig) -> weaviate.Client:
         auth_config = weaviate.auth.AuthApiKey(api_key=config.api_key)
@@ -106,7 +108,7 @@ class WeaviateVector(BaseVector):
         texts = [d.page_content for d in documents]
         metadatas = [d.metadata for d in documents]
 
-        logger.warning(f"=== document: {os.environ["UNIBASE_ACCOUNT"]} {documents[0]}")
+        logger.warning(f"=== document: {self._account_id} {documents[0]}")
         
         ids = []
 
@@ -116,13 +118,14 @@ class WeaviateVector(BaseVector):
                 if metadatas is not None:
                     for key, val in metadatas[i].items():
                         data_properties[key] = self._json_serializable(val)
-
+                data_properties["tenant_id"] = self._tenant_id
+                
                 batch.add_data_object(
                     data_object=data_properties,
                     class_name=self._collection_name,
                     uuid=uuids[i],
                     vector=embeddings[i] if embeddings else None,
-                    tenant=os.environ["UNIBASE_ACCOUNT"],
+                    tenant=self._account_id,
                 )
                 ids.append(uuids[i])
         return ids
@@ -133,7 +136,7 @@ class WeaviateVector(BaseVector):
         if self._client.schema.contains(schema):
             where_filter = {"operator": "Equal", "path": [key], "valueText": value}
 
-            self._client.batch.delete_objects(class_name=self._collection_name, where=where_filter, output="minimal",tenant=os.environ["UNIBASE_ACCOUNT"])
+            self._client.batch.delete_objects(class_name=self._collection_name, where=where_filter, output="minimal",tenant=self._account_id)
 
     def delete(self):
         # check whether the index already exists
@@ -150,7 +153,7 @@ class WeaviateVector(BaseVector):
             return False
         result = (
             self._client.query.get(collection_name)
-            .with_tenant(os.environ["UNIBASE_ACCOUNT"])
+            .with_tenant(self._account_id)
             .with_additional(["id"])
             .with_where(
                 {
@@ -181,7 +184,7 @@ class WeaviateVector(BaseVector):
                     self._client.data_object.delete(
                         class_name=self._collection_name,
                         uuid=uuid,
-                        tenant=os.environ["UNIBASE_ACCOUNT"],
+                        tenant=self._account_id,
                     )
                 except weaviate.UnexpectedStatusCodeException as e:
                     # tolerate not found error
@@ -193,7 +196,7 @@ class WeaviateVector(BaseVector):
         collection_name = self._collection_name
         properties = self._attributes
         properties.append(Field.TEXT_KEY.value)
-        query_obj = self._client.query.get(collection_name, properties).with_tenant(os.environ["UNIBASE_ACCOUNT"])
+        query_obj = self._client.query.get(collection_name, properties).with_tenant(self._account_id)
 
         vector = {"vector": query_vector}
         if kwargs.get("where_filter"):
@@ -240,7 +243,7 @@ class WeaviateVector(BaseVector):
         properties.append(Field.TEXT_KEY.value)
         if kwargs.get("search_distance"):
             content["certainty"] = kwargs.get("search_distance")
-        query_obj = self._client.query.get(collection_name, properties).with_tenant(os.environ["UNIBASE_ACCOUNT"])
+        query_obj = self._client.query.get(collection_name, properties).with_tenant(self._account_id)
         if kwargs.get("where_filter"):
             query_obj = query_obj.with_where(kwargs.get("where_filter"))
         query_obj = query_obj.with_additional(["vector"])
@@ -284,6 +287,8 @@ class WeaviateVectorFactory(AbstractVectorFactory):
 
         return WeaviateVector(
             collection_name=collection_name,
+            account_id=dataset.created_by,
+            tenant_id=dataset.tenant_id,
             config=WeaviateConfig(
                 endpoint=dify_config.WEAVIATE_ENDPOINT,
                 api_key=dify_config.WEAVIATE_API_KEY,

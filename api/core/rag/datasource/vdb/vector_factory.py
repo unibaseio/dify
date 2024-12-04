@@ -13,6 +13,8 @@ from extensions.ext_database import db
 from extensions.ext_redis import redis_client
 from models.dataset import Dataset, Whitelist
 
+import logging
+logger = logging.getLogger(__name__)
 
 class AbstractVectorFactory(ABC):
     @abstractmethod
@@ -36,6 +38,7 @@ class Vector:
 
     def _init_vector(self) -> BaseVector:
         vector_type = dify_config.VECTOR_STORE
+        logger.warning(f"=== init vector: {self._dataset.created_by} {self._dataset.id} {self._dataset.tenant_id} {self._dataset.name}")
 
         if self._dataset.index_struct_dict:
             vector_type = self._dataset.index_struct_dict["type"]
